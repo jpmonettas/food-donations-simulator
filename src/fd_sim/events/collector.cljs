@@ -1,8 +1,12 @@
-(ns fd-sim.events.collector)
+(ns fd-sim.events.collector
+  (:require [fd-sim.events.donators :as events.donators]))
 
 (defn initialize [_ _]
-  {:money 0})
+  {:collector/donations []
+   :ui/selected-role :donator
+   :ui/selected-donator (ffirst events.donators/donators)
+   :collector/donators events.donators/donators})
 
-(defn add-money [db [_ amount]]
-  (update db :money #(+ % amount)))
+(defn add-donation [db [_ donation]]
+  (update db :collector/donations conj donation))
 
