@@ -29,8 +29,8 @@
             [:option {:value (:user/id d)} (:user/name d)])]]
         [:div
          [:input {:type :text :value @amount-txt :on-change #(reset! amount-txt (.-value (.-target %)))}]
-         [:button {:on-click #(dispatch [:collector/add-donation {:user-id @selected-donator
-                                                                  :amount (js/parseFloat @amount-txt)}])}
+         [:button {:on-click #(dispatch [:collector/add-donation {:user/id @selected-donator
+                                                                  :donation/amount (js/parseFloat @amount-txt)}])}
           "Donate"]]]])))
 
 (defn collector-panel []

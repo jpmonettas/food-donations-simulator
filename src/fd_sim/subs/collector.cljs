@@ -2,6 +2,6 @@
 
 (defn balance [db _]
   (->> (:collector/donations db)
-       (map :amount)
+       (map :donation/amount)
        (reduce +)))
 
