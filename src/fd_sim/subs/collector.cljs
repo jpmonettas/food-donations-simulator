@@ -8,6 +8,12 @@
 (defn market [db _]
   (:collector/market db))
 
-(defn donations [db [_ {:keys [user/id]}]]
+(defn donations [db [_ {:keys [donator/id]}]]
   (cond->> (:collector/donations db)
-    id (filter #(= (:user/id %) id))))
+    id (filter #(= (:donator/id %) id))))
+
+(defn dishes [db [_ _]]
+  (:collector/dishes db))
+
+(defn food-services [db [_ _]]
+  (:collector/food-services db))

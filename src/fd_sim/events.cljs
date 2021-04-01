@@ -23,5 +23,6 @@
 
 (reg-event-db :ui/select-role [sc] events.ui/select-role)
 (reg-event-db :ui/select-donator [sc] events.ui/select-donator)
+(reg-event-db :ui/select-food-service [sc] events.ui/select-food-service)
 
  

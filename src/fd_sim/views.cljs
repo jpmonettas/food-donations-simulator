@@ -1,6 +1,7 @@
 (ns fd-sim.views
   (:require [re-frame.core :refer [dispatch subscribe]]
-            [reagent.core :as reagent]))
+            [reagent.core :as reagent]
+            [clojure.string :as str]))
 
 (defn tabs [{:keys [event-key subs-key items]}]
   (let [selected @(subscribe [subs-key])]
@@ -11,7 +12,7 @@
                    (= id selected) (assoc :class "selected"))
         label])]))
 
-(defn donations-panel [{:keys [user/id] :as filter}]
+(defn donations-panel [{:keys [donator/id] :as filter}]
   (let [donations @(subscribe [:collector/donations filter])
         donators @(subscribe [:donators/donators])]
    [:div.donations.panel
@@ -24,7 +25,7 @@
         ^{:key (str (:donation/id d))}
         [:tr
          [:td (str (:donation/id d))]
-         [:td (:user/name (get donators (:user/id d)))]
+         [:td (:donator/name (get donators (:donator/id d)))]
          [:td (str (:donation/amount d))]])
       ]]]))
 
@@ -42,14 +43,14 @@
          [:select {:on-change (fn [e] (dispatch [:ui/select-donator (js/parseFloat (.-value (.-target e)))]))
                    :value @selected-donator}
           (for [d (vals @donators)]
-            ^{:key (str (:user/id d))}
-            [:option {:value (:user/id d)} (:user/name d)])]]
+            ^{:key (str (:donator/id d))}
+            [:option {:value (:donator/id d)} (:donator/name d)])]]
         [:div
          [:input {:type :number :value @amount-txt :on-change #(reset! amount-txt (.-value (.-target %)))}]
-         [:button {:on-click #(dispatch [:collector/add-donation {:user/id @selected-donator
+         [:button {:on-click #(dispatch [:collector/add-donation {:donator/id @selected-donator
                                                                   :donation/amount (js/parseFloat @amount-txt)}])}
           "Donate"]]]
-       [donations-panel {:user/id @selected-donator}]])))
+       [donations-panel {:donator/id @selected-donator}]])))
 
 (defn collector-market-panel []
   (let [market (subscribe [:collector/market])
@@ -93,8 +94,38 @@
    [collector-market-panel]
    [donations-panel {}]])
 
+(defn dishes-panel []
+  (let [dishes (vals @(subscribe [:collector/dishes]))
+        market @(subscribe [:collector/market])]
+    [:div.dishes.panel
+     [:h2.title "Dishes"]
+     [:table
+      [:thead
+       [:tr [:th "Id"] [:th "Dish name"] [:th "Ingredients"]]]
+      [:tbody
+       (for [d dishes]
+         ^{:key (str (:dish/id d))}
+         [:tr
+          [:td (str (:dish/id d))]
+          [:td (:dish/name d)]
+          [:td (->> (:dish/ingredients d)
+                    (map (fn [[iid iq]]
+                           (str (:ingredient/name (get market iid)) "(" iq "grs)")))
+                    (str/join ", "))
+           ]])]]])) 
+
 (defn food-service-panel []
-  [:div "Food service"])
+  (let [selected-food-service (subscribe [:ui/selected-food-service])
+        services (subscribe [:collector/food-services])]
+    [:div
+     [dishes-panel]
+     [:div
+      [:label "Login as food service:"]
+      [:select {:on-change (fn [e] (dispatch [:ui/select-food-service (js/parseFloat (.-value (.-target e)))]))
+                :value @selected-food-service}
+       (for [s (vals @services)]
+         ^{:key (str (:food-service/id s))}
+         [:option {:value (:food-service/id s)} (:food-service/name s)])]]]))
 
 
 (defn main []
