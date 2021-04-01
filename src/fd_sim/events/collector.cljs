@@ -5,7 +5,12 @@
   db/initial-db)
 
 (defn add-donation [db [_ donation]]
-  (update db :collector/donations conj donation))
+  (let [next-id (if-not (empty? (:collector/donations db))
+                  (inc (:donation/id (last (:collector/donations db))) )
+                  0)]
+    (update db :collector/donations conj (assoc donation
+                                                :donation/usable-amount (:donation/amount donation)
+                                                :donation/id next-id))))
 
 (defn add-market-ingredient [db [_ ing]]
   (let [next-id (inc (apply max (keys (:collector/market db))))]

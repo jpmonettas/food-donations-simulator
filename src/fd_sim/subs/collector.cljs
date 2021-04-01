@@ -7,3 +7,7 @@
 
 (defn market [db _]
   (:collector/market db))
+
+(defn donations [db [_ {:keys [user/id]}]]
+  (cond->> (:collector/donations db)
+    id (filter #(= (:user/id %) id))))

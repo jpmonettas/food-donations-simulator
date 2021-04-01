@@ -7,14 +7,19 @@
 (s/def :ui/selected-role #{:donator :collector :food-service})
 (s/def :ui/selected-donator :user/id)
 
-(s/def :sim/price float?)
+(s/def :sim/price number?)
+(s/def :donation/id int?)
 (s/def :donation/amount :sim/price)
+(s/def :donation/usable-amount :sim/price)
 (s/def :ingredient/price :sim/price)
 
 (s/def :collector/user (s/keys :req [:user/id :user/name]))
 (s/def :collector/donator :collector/user)
-(s/def :collector/donation (s/keys :req [:user/id :donation/amount]))
-(s/def :collector/donations (s/coll-of :collector/donation))
+(s/def :collector/donation (s/keys :req [:user/id
+                                         :donation/id
+                                         :donation/amount
+                                         :donation/usable-amount]))
+(s/def :collector/donations (s/coll-of :collector/donation :kind vector?))
 (s/def :collector/donators (s/map-of :user/id :collector/donator))
 (s/def :ingredient/id int?)
 (s/def :collector/ingredient (s/keys :req [:ingredient/name :ingredient/price]))

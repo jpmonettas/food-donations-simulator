@@ -11,6 +11,23 @@
                    (= id selected) (assoc :class "selected"))
         label])]))
 
+(defn donations-panel [{:keys [user/id] :as filter}]
+  (let [donations @(subscribe [:collector/donations filter])
+        donators @(subscribe [:donators/donators])]
+   [:div.donations.panel
+    [:h2.title "Donations"]
+    [:table
+     [:thead
+      [:tr [:th "Id"] [:th "Donator"] [:th "Amount"]]]
+     [:tbody
+      (for [d donations]
+        ^{:key (str (:donation/id d))}
+        [:tr
+         [:td (str (:donation/id d))]
+         [:td (:user/name (get donators (:user/id d)))]
+         [:td (str (:donation/amount d))]])
+      ]]]))
+
 (defn donator-panel []
   (let [amount-txt (reagent/atom "")
         donators (subscribe [:donators/donators])
@@ -23,7 +40,7 @@
         [:div
          [:label "Login as :"]
          [:select {:on-change (fn [e] (dispatch [:ui/select-donator (js/parseFloat (.-value (.-target e)))]))
-                   :selected @selected-donator}
+                   :value @selected-donator}
           (for [d (vals @donators)]
             ^{:key (str (:user/id d))}
             [:option {:value (:user/id d)} (:user/name d)])]]
@@ -31,9 +48,10 @@
          [:input {:type :number :value @amount-txt :on-change #(reset! amount-txt (.-value (.-target %)))}]
          [:button {:on-click #(dispatch [:collector/add-donation {:user/id @selected-donator
                                                                   :donation/amount (js/parseFloat @amount-txt)}])}
-          "Donate"]]]])))
+          "Donate"]]]
+       [donations-panel {:user/id @selected-donator}]])))
 
-(defn collector-panel []
+(defn collector-market-panel []
   (let [market (subscribe [:collector/market])
         new-ing-txt (reagent/atom "")
         new-ing-price-txt (reagent/atom "")
@@ -41,14 +59,11 @@
         ]
     (fn []
       (let [update-ings @update-ings-txt]
-       [:div
         [:div.market.panel
          [:h2.title "Market"]
          [:table
           [:thead
-           [:tr
-            [:th "Ingredient"]
-            [:th "Price"]]]
+           [:tr [:th "Ingredient"] [:th "Price"]]]
           [:tbody
            (for [[ing-id ing] @market]
              ^{:key (str ing-id)}
@@ -71,7 +86,12 @@
                                                                                     :ingredient/price (js/parseFloat @new-ing-price-txt)}])
                                        (reset! new-ing-txt "")
                                        (reset! new-ing-price-txt ""))}
-                  "Add"]]]]]]]))))
+                  "Add"]]]]]]))))
+
+(defn collector-panel []
+  [:div.collector
+   [collector-market-panel]
+   [donations-panel {}]])
 
 (defn food-service-panel []
   [:div "Food service"])
