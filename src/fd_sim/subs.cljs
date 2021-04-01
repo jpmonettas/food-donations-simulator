@@ -5,6 +5,7 @@
             [fd-sim.subs.ui :as subs.ui]))
          
 (reg-sub :collector/balance subs.collector/balance)
+(reg-sub :collector/market subs.collector/market)
 (reg-sub :ui/selected-role subs.ui/selected-role)
 (reg-sub :ui/selected-donator subs.ui/selected-donator)
 (reg-sub :donators/donators subs.donators/donators)

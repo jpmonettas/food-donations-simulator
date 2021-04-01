@@ -18,6 +18,8 @@
 
 (reg-event-db :collector/initialize [sc] events.collector/initialize)
 (reg-event-db :collector/add-donation [sc] events.collector/add-donation)
+(reg-event-db :collector/add-market-ingredient [sc] events.collector/add-market-ingredient)
+(reg-event-db :collector/update-market-ingredient-price [sc] events.collector/update-market-ingredient-price)
 
 (reg-event-db :ui/select-role [sc] events.ui/select-role)
 (reg-event-db :ui/select-donator [sc] events.ui/select-donator)

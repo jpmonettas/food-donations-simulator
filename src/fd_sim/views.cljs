@@ -28,13 +28,50 @@
             ^{:key (str (:user/id d))}
             [:option {:value (:user/id d)} (:user/name d)])]]
         [:div
-         [:input {:type :text :value @amount-txt :on-change #(reset! amount-txt (.-value (.-target %)))}]
+         [:input {:type :number :value @amount-txt :on-change #(reset! amount-txt (.-value (.-target %)))}]
          [:button {:on-click #(dispatch [:collector/add-donation {:user/id @selected-donator
                                                                   :donation/amount (js/parseFloat @amount-txt)}])}
           "Donate"]]]])))
 
 (defn collector-panel []
-  [:div "Collector"])
+  (let [market (subscribe [:collector/market])
+        new-ing-txt (reagent/atom "")
+        new-ing-price-txt (reagent/atom "")
+        update-ings-txt (reagent/atom {})
+        ]
+    (fn []
+      (let [update-ings @update-ings-txt]
+       [:div
+        [:div.market.panel
+         [:h2.title "Market"]
+         [:table
+          [:thead
+           [:tr
+            [:th "Ingredient"]
+            [:th "Price"]]]
+          [:tbody
+           (for [[ing-id ing] @market]
+             ^{:key (str ing-id)}
+             [:tr
+              [:td (:ingredient/name ing)]
+              [:td [:input {:type :number
+                            :value (or (get update-ings ing-id) (:ingredient/price ing))
+                            :on-change #(swap! update-ings-txt assoc ing-id (js/parseFloat (.-value (.-target %))))}]]
+              [:td [:button {:on-click #(dispatch [:collector/update-market-ingredient-price ing-id (get update-ings ing-id)])}
+                    "Update"]]])
+           [:tr
+            [:td [:input {:type :text
+                          :value @new-ing-txt
+                          :on-change #(reset! new-ing-txt (.-value (.-target %)))}]]
+            [:td [:input {:type :number
+                          :value @new-ing-price-txt
+                          :on-change #(reset! new-ing-price-txt (.-value (.-target %)))}]]
+            [:td [:button {:on-click (fn [_]
+                                       (dispatch [:collector/add-market-ingredient {:ingredient/name @new-ing-txt
+                                                                                    :ingredient/price (js/parseFloat @new-ing-price-txt)}])
+                                       (reset! new-ing-txt "")
+                                       (reset! new-ing-price-txt ""))}
+                  "Add"]]]]]]]))))
 
 (defn food-service-panel []
   [:div "Food service"])

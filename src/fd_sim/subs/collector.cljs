@@ -5,3 +5,5 @@
        (map :donation/amount)
        (reduce +)))
 
+(defn market [db _]
+  (:collector/market db))
