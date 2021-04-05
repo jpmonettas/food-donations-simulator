@@ -7,6 +7,11 @@
 (s/def :food-service/id int?)
 (s/def :food-service/name string?)
 
+(s/def :order/id int?)
+(s/def :order/quantity int?)
+(s/def :order/status #{:waiting :delivered})
+(s/def :food-service/order (s/keys :req [:order/id :dish/id :order/quantity :order/status]))
+
 (s/def :ui/selected-role #{:donator :collector :food-service})
 (s/def :ui/selected-donator :donator/id)
 (s/def :ui/selected-food-service :food-service/id)
@@ -35,6 +40,7 @@
 (s/def :collector/market (s/map-of :ingredient/id :collector/ingredient))
 (s/def :collector/dish (s/keys :req [:dish/name :dish/ingredients]))
 (s/def :collector/dishes (s/map-of :dish/id :collector/dish))
+(s/def :collector/orders (s/map-of :order/id :food-service/order))
 
 (s/def ::db (s/keys :req [:ui/selected-role
                           :ui/selected-donator
@@ -73,4 +79,9 @@
    :collector/donations []
    :collector/donators initial-donators
    :collector/dishes initial-dishes
-   :collector/food-services initial-food-services})
+   :collector/food-services initial-food-services
+   :collector/orders {1 {:order/id 1
+                         :food-service/id 1
+                         :dish/id 1
+                         :order/quantity 10
+                         :order/status :waiting}}})

@@ -2,6 +2,7 @@
   (:require [re-frame.core :refer [reg-event-db] :as re-frame]
             [fd-sim.events.collector :as events.collector]
             [fd-sim.events.ui :as events.ui]
+            [fd-sim.events.food-service :as events.food-service]
             [fd-sim.db :as db]
             [expound.alpha :as expound]
             [clojure.spec.alpha :as s]))
@@ -24,5 +25,7 @@
 (reg-event-db :ui/select-role [sc] events.ui/select-role)
 (reg-event-db :ui/select-donator [sc] events.ui/select-donator)
 (reg-event-db :ui/select-food-service [sc] events.ui/select-food-service)
+
+(reg-event-db :collector/add-order [sc] events.collector/add-order)
 
  

@@ -19,3 +19,11 @@
 (defn update-market-ingredient-price [db [_ ing-id price]]
   (assoc-in db [:collector/market ing-id :ingredient/price] price))
 
+(defn add-order [db [_ order]]
+  (let [next-order-id (->> (keys (:collector/orders db))
+                           (apply max)
+                           inc)
+        order (assoc order
+                     :order/status :waiting
+                     :order/id next-order-id)]
+    (update db :collector/orders assoc next-order-id order)))

@@ -89,11 +89,6 @@
                                        (reset! new-ing-price-txt ""))}
                   "Add"]]]]]]))))
 
-(defn collector-panel []
-  [:div.collector
-   [collector-market-panel]
-   [donations-panel {}]])
-
 (defn dishes-panel []
   (let [dishes (vals @(subscribe [:collector/dishes]))
         market @(subscribe [:collector/market])]
@@ -111,21 +106,67 @@
           [:td (->> (:dish/ingredients d)
                     (map (fn [[iid iq]]
                            (str (:ingredient/name (get market iid)) "(" iq "grs)")))
-                    (str/join ", "))
-           ]])]]])) 
+                    (str/join ", "))]])]]]))
+
+(defn orders-panel [{:keys [orders new-order-row]}]
+  [:div
+   [:h2.title "Orders"]
+   [:table
+    [:thead
+     [:tr [:th "Id"] [:th "Dish name"] [:th "Quantity"] [:th "Status"] [:th ""]]]
+    [:tbody
+     (for [o orders]
+       ^{:key (str (:order/id o))}
+       [:tr
+        [:td (:order/id o)]
+        [:td (:dish/name o)]
+        [:td (:order/quantity o)]
+        [:td (:order/status o)]])
+     (when new-order-row
+       new-order-row)]]])
+
+(defn collector-panel []
+  (let [orders @(subscribe [:collector/orders])]
+   [:div.collector
+    [collector-market-panel]
+    [dishes-panel]
+    [orders-panel {:orders orders}]
+    [donations-panel {}]]))
 
 (defn food-service-panel []
   (let [selected-food-service (subscribe [:ui/selected-food-service])
-        services (subscribe [:collector/food-services])]
-    [:div
-     [dishes-panel]
-     [:div
-      [:label "Login as food service:"]
-      [:select {:on-change (fn [e] (dispatch [:ui/select-food-service (js/parseFloat (.-value (.-target e)))]))
-                :value @selected-food-service}
-       (for [s (vals @services)]
-         ^{:key (str (:food-service/id s))}
-         [:option {:value (:food-service/id s)} (:food-service/name s)])]]]))
+        services (subscribe [:collector/food-services])
+        orders (subscribe [:collector/selected-food-service-orders])
+        dishes (subscribe [:collector/dishes])
+        selected-dish (reagent/atom (first (keys @dishes)))
+        new-order-qty-txt (reagent/atom "")]
+    (fn []
+      (let [all-dishes @dishes]
+       [:div
+        [:div
+         [:label "Login as food service:"]
+         [:select {:on-change (fn [e] (dispatch [:ui/select-food-service (js/parseFloat (.-value (.-target e)))]))
+                   :value @selected-food-service}
+          (for [s (vals @services)]
+            ^{:key (str (:food-service/id s))}
+            [:option {:value (:food-service/id s)} (:food-service/name s)])]]
+        [orders-panel {:orders @orders
+                       :new-order-row [:tr
+                                       [:td ""]
+                                       [:td [:select {:on-change #(reset! selected-dish (.-value (.-target %)))
+                                                      :value @selected-dish}
+                                             (for [d (vals all-dishes)]
+                                               ^{:key (str (:dish/id d))}
+                                               [:option {:value (:dish/id d)} (:dish/name d)])]]
+                                       [:td [:input {:type :number
+                                                     :value @new-order-qty-txt
+                                                     :on-change #(reset! new-order-qty-txt (.-value (.-target %)))}]]
+                                       [:td [:button {:on-click (fn [_]
+                                                                  (dispatch [:collector/add-order {:food-service/id @selected-food-service
+                                                                                                   :dish/id (js/parseFloat @selected-dish)
+                                                                                                   :order/quantity (js/parseFloat @new-order-qty-txt)}])
+                                                                  (reset! new-order-qty-txt ""))}
+                                             "Add"]]]}]]))))
 
 
 (defn main []

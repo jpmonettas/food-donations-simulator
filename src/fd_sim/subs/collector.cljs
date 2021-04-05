@@ -17,3 +17,13 @@
 
 (defn food-services [db [_ _]]
   (:collector/food-services db))
+
+(defn orders [db _]
+  (let [dishes (:collector/dishes db)]
+    (->> (vals (:collector/orders db))
+         (map (fn [o] (assoc o :dish/name (:dish/name (get dishes (:dish/id o)))))))))
+
+(defn selected-food-service-orders [[orders dishes food-service-id] _]
+  (->> orders
+       (filter #(= food-service-id (:food-service/id %)))
+       (map (fn [o] (assoc o :dish/name (:dish/name (get dishes (:dish/id o))))))))
