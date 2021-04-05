@@ -27,3 +27,6 @@
                      :order/status :waiting
                      :order/id next-order-id)]
     (update db :collector/orders assoc next-order-id order)))
+
+(defn register-consumer [db [_ consumer]]
+  (update db :collector/consumers assoc (:consumer/id consumer) consumer))

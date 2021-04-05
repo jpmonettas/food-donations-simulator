@@ -27,3 +27,14 @@
   (->> orders
        (filter #(= food-service-id (:food-service/id %)))
        (map (fn [o] (assoc o :dish/name (:dish/name (get dishes (:dish/id o))))))))
+
+(defn consumers [db _]
+  (let [food-services (:collector/food-services db)]
+   (->> (vals (:collector/consumers db))
+        (map (fn [c]
+               (assoc c :food-service/name (:food-service/name (get food-services (:food-service/id c)))))))))
+
+(defn selected-food-service-consumers [[consumers food-services food-service-id]]
+  (->> consumers
+       (map (fn [c]
+              (assoc c :food-service/name (:food-service/name (get food-services (:food-service/id c))))))))

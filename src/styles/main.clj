@@ -20,11 +20,15 @@
 
    [:.tab-content {:padding-top "10px"}]])
 
+(def consumers
+  [[:img.profile {:width "50px" :height "50px"}]])
+
 ;; This creates resources/public/css/main.css
 (def ^:garden main
   (list
    screen
    tabs
+   consumers
    ))
 
 

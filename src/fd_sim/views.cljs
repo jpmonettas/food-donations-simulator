@@ -125,21 +125,44 @@
      (when new-order-row
        new-order-row)]]])
 
+(defn consumers-panel [{:keys [consumers new-consumer-row]}]
+  [:div {}
+   [:h2.title "Consumers"]
+   [:table
+    [:thead
+     [:tr [:th "CI"] [:th "Name"] [:th "Pic"] [:th "Food service"]]]
+    [:tbody
+     (for [c consumers]
+       ^{:key (:consumer/id c)}
+       [:tr
+        [:td (:consumer/id c)]
+        [:td (:consumer/name c)]
+        [:td [:img.profile {:src (:profile/picture c)}]]
+        [:td (:food-service/name c)]])
+     (when new-consumer-row
+       new-consumer-row)]]])
+
 (defn collector-panel []
-  (let [orders @(subscribe [:collector/orders])]
+  (let [orders @(subscribe [:collector/orders])
+        consumers @(subscribe [:collector/consumers])]
    [:div.collector
     [collector-market-panel]
     [dishes-panel]
     [orders-panel {:orders orders}]
+    [consumers-panel {:consumers consumers}]
     [donations-panel {}]]))
 
 (defn food-service-panel []
   (let [selected-food-service (subscribe [:ui/selected-food-service])
         services (subscribe [:collector/food-services])
         orders (subscribe [:collector/selected-food-service-orders])
+        consumers (subscribe [:collector/selected-food-service-consumers])
         dishes (subscribe [:collector/dishes])
         selected-dish (reagent/atom (first (keys @dishes)))
-        new-order-qty-txt (reagent/atom "")]
+        new-order-qty-txt (reagent/atom "")
+        new-cons-ci-txt (reagent/atom "")
+        new-cons-name-txt (reagent/atom "")
+        new-cons-pic-txt (reagent/atom "")]
     (fn []
       (let [all-dishes @dishes]
        [:div
@@ -166,7 +189,28 @@
                                                                                                    :dish/id (js/parseFloat @selected-dish)
                                                                                                    :order/quantity (js/parseFloat @new-order-qty-txt)}])
                                                                   (reset! new-order-qty-txt ""))}
-                                             "Add"]]]}]]))))
+                                             "Add"]]]}]
+        [consumers-panel {:consumers @consumers
+                          :new-consumer-row [:tr
+                                             [:td [:input {:type :text
+                                                           :value @new-cons-ci-txt
+                                                           :on-change #(reset! new-cons-ci-txt (.-value (.-target %)))}]]
+                                             [:td [:input {:type :text
+                                                           :value @new-cons-name-txt
+                                                           :on-change #(reset! new-cons-name-txt (.-value (.-target %)))}]]
+                                             [:td [:input {:type :text
+                                                           :value @new-cons-pic-txt
+                                                           :on-change #(reset! new-cons-pic-txt (.-value (.-target %)))}]]
+                                             [:td [:button {:on-click (fn [_]
+                                                                        (dispatch [:collector/register-consumer {:food-service/id @selected-food-service
+                                                                                                                 :consumer/id @new-cons-ci-txt
+                                                                                                                 :profile/picture @new-cons-pic-txt
+                                                                                                                 :consumer/name @new-cons-name-txt}])
+                                                                        (reset! new-cons-ci-txt "")
+                                                                        (reset! new-cons-pic-txt "")
+                                                                        (reset! new-cons-name-txt ""))}
+                                                   "Register"]]]}]
+        ]))))
 
 
 (defn main []
@@ -187,3 +231,6 @@
         :collector    [collector-panel]
         :food-service [food-service-panel])]]))
  
+
+
+                                             

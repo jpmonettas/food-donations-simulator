@@ -2,8 +2,13 @@
   (:require [fd-sim.events.donators :as events.donators]
             [clojure.spec.alpha :as s]))
 
+(s/def :consumer/id string?)
+(s/def :consumer/name string?)
+(s/def :profile/picture string?)
+
 (s/def :donator/id int?)
 (s/def :donator/name string?)
+
 (s/def :food-service/id int?)
 (s/def :food-service/name string?)
 
@@ -41,6 +46,8 @@
 (s/def :collector/dish (s/keys :req [:dish/name :dish/ingredients]))
 (s/def :collector/dishes (s/map-of :dish/id :collector/dish))
 (s/def :collector/orders (s/map-of :order/id :food-service/order))
+(s/def :food-service/consumer (s/keys :req [:consumer/id :consumer/name :profile/picture :food-service/id]))
+(s/def :collector/consumers (s/map-of :consumer/id :food-service/consumer))
 
 (s/def ::db (s/keys :req [:ui/selected-role
                           :ui/selected-donator
@@ -71,6 +78,21 @@
                             2 {:food-service/id 2
                                :food-service/name "Olla Popular Cordon"}})
 
+(def initial-orders {1 {:order/id 1
+                        :food-service/id 1
+                        :dish/id 1
+                        :order/quantity 10
+                        :order/status :waiting}})
+
+(def initial-consumers {"4.875.532-2" {:consumer/id "4.875.532-2"
+                                       :consumer/name "Martin"
+                                       :profile/picture "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+                                       :food-service/id 1}
+                        "2.875.534-9" {:consumer/id "2.875.534-9"
+                                       :consumer/name "Maria"
+                                       :profile/picture "https://media.istockphoto.com/photos/portrait-of-a-girl-picture-id938709362?k=6&m=938709362&s=612x612&w=0&h=mUQAOuFjTUhvykTbkpXXERePajEWvVqOM2tR3gwS3II="
+                                       :food-service/id 1}})
+
 (def initial-db
   {:ui/selected-role :donator
    :ui/selected-donator (ffirst initial-donators)
@@ -80,8 +102,5 @@
    :collector/donators initial-donators
    :collector/dishes initial-dishes
    :collector/food-services initial-food-services
-   :collector/orders {1 {:order/id 1
-                         :food-service/id 1
-                         :dish/id 1
-                         :order/quantity 10
-                         :order/status :waiting}}})
+   :collector/orders initial-orders
+   :collector/consumers initial-consumers})

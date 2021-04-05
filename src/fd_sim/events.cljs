@@ -21,11 +21,12 @@
 (reg-event-db :collector/add-donation [sc] events.collector/add-donation)
 (reg-event-db :collector/add-market-ingredient [sc] events.collector/add-market-ingredient)
 (reg-event-db :collector/update-market-ingredient-price [sc] events.collector/update-market-ingredient-price)
+(reg-event-db :collector/add-order [sc] events.collector/add-order)
+(reg-event-db :collector/register-consumer [sc] events.collector/register-consumer)
 
 (reg-event-db :ui/select-role [sc] events.ui/select-role)
 (reg-event-db :ui/select-donator [sc] events.ui/select-donator)
 (reg-event-db :ui/select-food-service [sc] events.ui/select-food-service)
 
-(reg-event-db :collector/add-order [sc] events.collector/add-order)
 
  
