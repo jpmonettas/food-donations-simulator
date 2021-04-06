@@ -18,10 +18,23 @@
 (defn food-services [db [_ _]]
   (:collector/food-services db))
 
+(defn open-order?
+  "A order is open if there isn't any purchase-order that includes it and is also filled"
+  [db order-id]
+  (empty? (some (fn [o]
+                  (and (contains? (:purchase-order/orders o) order-id)
+                       (:purchase-order/fill o)))
+                (vals (:collector/purchase-orders db)))))
+
 (defn orders [db _]
   (let [dishes (:collector/dishes db)]
     (->> (vals (:collector/orders db))
-         (map (fn [o] (assoc o :dish/name (:dish/name (get dishes (:dish/id o)))))))))
+         (map (fn [o]
+                (-> o
+                    (assoc :dish/name (:dish/name (get dishes (:dish/id o)))
+                           :order/status (if (open-order? db (:order/id o))
+                                           :open
+                                           :filled))))))))
 
 (defn selected-food-service-orders [[orders dishes food-service-id] _]
   (->> orders
@@ -38,3 +51,6 @@
   (->> consumers
        (map (fn [c]
               (assoc c :food-service/name (:food-service/name (get food-services (:food-service/id c))))))))
+
+(defn purchase-orders [db _]
+  (vals (:collector/purchase-orders db)))

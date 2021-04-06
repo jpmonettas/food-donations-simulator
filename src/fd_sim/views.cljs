@@ -64,24 +64,16 @@
          [:h2.title "Market"]
          [:table
           [:thead
-           [:tr [:th "Ingredient"] [:th "Price"]]]
+           [:tr [:th "Ingredient"]]]
           [:tbody
            (for [[ing-id ing] @market]
              ^{:key (str ing-id)}
              [:tr
-              [:td (:ingredient/name ing)]
-              [:td [:input {:type :number
-                            :value (or (get update-ings ing-id) (:ingredient/price ing))
-                            :on-change #(swap! update-ings-txt assoc ing-id (js/parseFloat (.-value (.-target %))))}]]
-              [:td [:button {:on-click #(dispatch [:collector/update-market-ingredient-price ing-id (get update-ings ing-id)])}
-                    "Update"]]])
+              [:td (:ingredient/name ing)]])
            [:tr
             [:td [:input {:type :text
                           :value @new-ing-txt
-                          :on-change #(reset! new-ing-txt (.-value (.-target %)))}]]
-            [:td [:input {:type :number
-                          :value @new-ing-price-txt
-                          :on-change #(reset! new-ing-price-txt (.-value (.-target %)))}]]
+                          :on-change #(reset! new-ing-txt (.-value (.-target %)))}]]            
             [:td [:button {:on-click (fn [_]
                                        (dispatch [:collector/add-market-ingredient {:ingredient/name @new-ing-txt
                                                                                     :ingredient/price (js/parseFloat @new-ing-price-txt)}])
@@ -142,6 +134,55 @@
      (when new-consumer-row
        new-consumer-row)]]])
 
+(defn purchase-orders []
+  (let [purchase-orders (subscribe [:collector/purchase-orders])
+        market (subscribe [:collector/market])
+        selected-order (reagent/atom nil)
+        ing-prices (reagent/atom nil)]
+    (fn []
+      (let [prices @ing-prices
+            ing-names @market]
+       [:div {}
+        (when (seq @purchase-orders)
+          [:div 
+           [:h2.title "Purchase Orders"]
+           [:table
+            [:thead
+             [:tr [:th "ID"] [:th "Orders"] [:th ""]]]
+            [:tbody
+             (for [po @purchase-orders]
+               ^{:key (str (:purchase-order/id po))}
+               [:tr
+                [:td (:purchase-order/id po)]
+                [:td (str/join "," (:purchase-order/orders po))]
+                [:td (when-not (:purchase-order/fill po)
+                       [:button {:on-click #(do
+                                             (reset! selected-order po)
+                                             (reset! ing-prices (zipmap (keys (:purchase-order/ingredients po))
+                                                                        (repeat nil))))}
+                       "Fill"])]])]]
+           (when @selected-order
+             [:table
+              [:thead
+               [:tr [:th "Ingredient"] [:th "Deal price"]]]
+              [:tbody
+               (for [i (keys prices)]
+                 ^{:key (str i)}
+                 [:tr
+                  [:td (:ingredient/name (get ing-names i))]
+                  [:td [:input {:type :number
+                                :value (get prices i)
+                                :on-change #(swap! ing-prices assoc i (js/parseFloat (.-value (.-target %))))}]]])
+               [:tr [:td] [:td]
+                [:td [:button
+                      {:on-click #(do
+                                    (dispatch [:collector/fill-purchase-order
+                                               (:purchase-order/id @selected-order)
+                                               @ing-prices])
+                                    (reset! selected-order nil)
+                                    (reset! ing-prices nil))}
+                      "Finish"]]]]])])]))))
+
 (defn collector-panel []
   (let [orders @(subscribe [:collector/orders])
         consumers @(subscribe [:collector/consumers])]
@@ -149,6 +190,9 @@
     [collector-market-panel]
     [dishes-panel]
     [orders-panel {:orders orders}]
+    [:button {:on-click #(dispatch [:collector/create-purchase-order])}
+     "Create purchase order"]
+    [purchase-orders]
     [consumers-panel {:consumers consumers}]
     [donations-panel {}]]))
 

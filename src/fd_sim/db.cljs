@@ -14,8 +14,8 @@
 
 (s/def :order/id int?)
 (s/def :order/quantity int?)
-(s/def :order/status #{:waiting :delivered})
-(s/def :food-service/order (s/keys :req [:order/id :dish/id :order/quantity :order/status]))
+(s/def :order/status #{:open :filled})
+(s/def :food-service/order (s/keys :req [:order/id :dish/id :order/quantity]))
 
 (s/def :ui/selected-role #{:donator :collector :food-service})
 (s/def :ui/selected-donator :donator/id)
@@ -41,13 +41,23 @@
                                          :donation/usable-amount]))
 (s/def :collector/donations (s/coll-of :collector/donation :kind vector?))
 (s/def :collector/donators (s/map-of :donator/id :collector/donator))
-(s/def :collector/ingredient (s/keys :req [:ingredient/name :ingredient/price]))
+(s/def :collector/ingredient (s/keys :req [:ingredient/name]))
 (s/def :collector/market (s/map-of :ingredient/id :collector/ingredient))
 (s/def :collector/dish (s/keys :req [:dish/name :dish/ingredients]))
 (s/def :collector/dishes (s/map-of :dish/id :collector/dish))
 (s/def :collector/orders (s/map-of :order/id :food-service/order))
 (s/def :food-service/consumer (s/keys :req [:consumer/id :consumer/name :profile/picture :food-service/id]))
 (s/def :collector/consumers (s/map-of :consumer/id :food-service/consumer))
+
+(s/def :purchase-order/id int?)
+(s/def :purchase-order/orders (s/coll-of :order/id))
+(s/def :purchase-order/ingredients (s/map-of :ingredient/id :ingredient/quantity))
+(s/def :purchase-order/fill (s/map-of :ingredient/id :ingredient/price))
+(s/def :collector/purchase-order (s/keys :req [:purchase-order/id
+                                               :purchase-order/orders
+                                               :purchase-order/ingredients]
+                                         :opt [:purchase-order/fill]))
+(s/def :collector/purchase-orders (s/map-of :purchase-order/id :collector/purchase-order))
 
 (s/def ::db (s/keys :req [:ui/selected-role
                           :ui/selected-donator
@@ -60,10 +70,8 @@
                        3 {:donator/id 3 :donator/name "Gonza"}
                        4 {:donator/id 4 :donator/name "Nico"}})
 
-(def initial-market {1 {:ingredient/name "Papas"
-                        :ingredient/price 30.0}
-                     2 {:ingredient/name "Muñato"
-                        :ingredient/price 35.0}})
+(def initial-market {1 {:ingredient/name "Papas"}
+                     2 {:ingredient/name "Muñato"}})
 
 (def initial-dishes {1 {:dish/id 1
                         :dish/name "Ensopado"
@@ -82,7 +90,7 @@
                         :food-service/id 1
                         :dish/id 1
                         :order/quantity 10
-                        :order/status :waiting}})
+                        :order/status :open}})
 
 (def initial-consumers {"4.875.532-2" {:consumer/id "4.875.532-2"
                                        :consumer/name "Martin"
@@ -91,16 +99,34 @@
                         "2.875.534-9" {:consumer/id "2.875.534-9"
                                        :consumer/name "Maria"
                                        :profile/picture "https://media.istockphoto.com/photos/portrait-of-a-girl-picture-id938709362?k=6&m=938709362&s=612x612&w=0&h=mUQAOuFjTUhvykTbkpXXERePajEWvVqOM2tR3gwS3II="
-                                       :food-service/id 1}})
+                                       :food-service/id 1}
+                        "3.975.534-2" {:consumer/id "3.975.534-2"
+                                       :consumer/name "Jorge"
+                                       :profile/picture "https://images.pexels.com/photos/2078265/pexels-photo-2078265.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+                                       :food-service/id 2}})
+
+(def initial-donations [{:donator/id 1
+                         :donation/id 1
+                         :donation/amount 100
+                         :donation/usable-amount 100}
+                        {:donation/id 2
+                         :donator/id 2                         
+                         :donation/amount 55
+                         :donation/usable-amount 55}
+                        {:donation/id 3
+                         :donator/id 3                        
+                         :donation/amount 177
+                         :donation/usable-amount 177}])
 
 (def initial-db
   {:ui/selected-role :donator
    :ui/selected-donator (ffirst initial-donators)
    :ui/selected-food-service (ffirst initial-food-services)
    :collector/market initial-market
-   :collector/donations []
+   :collector/donations initial-donations
    :collector/donators initial-donators
    :collector/dishes initial-dishes
    :collector/food-services initial-food-services
    :collector/orders initial-orders
-   :collector/consumers initial-consumers})
+   :collector/consumers initial-consumers
+   :food-service/current-serves {}})
