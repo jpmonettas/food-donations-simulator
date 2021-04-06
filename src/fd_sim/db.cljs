@@ -15,7 +15,7 @@
 (s/def :order/id int?)
 (s/def :order/quantity int?)
 (s/def :order/status #{:open :filled})
-(s/def :food-service/order (s/keys :req [:order/id :dish/id :order/quantity]))
+(s/def :food-service/order (s/keys :req [:order/id :dish/id :order/quantity :food-service/id]))
 
 (s/def :ui/selected-role #{:donator :collector :food-service})
 (s/def :ui/selected-donator :donator/id)
@@ -58,12 +58,21 @@
                                                :purchase-order/ingredients]
                                          :opt [:purchase-order/fill]))
 (s/def :collector/purchase-orders (s/map-of :purchase-order/id :collector/purchase-order))
+(s/def :collector/dish-serve (s/keys :req [:order/id :consumer/id]))
+(s/def :collector/dish-serves (s/coll-of :collector/dish-serve))
 
 (s/def ::db (s/keys :req [:ui/selected-role
                           :ui/selected-donator
+                          :ui/selected-food-service
+                          :collector/market
                           :collector/donations
                           :collector/donators
-                          :collector/dishes]))
+                          :collector/dishes
+                          :collector/food-services
+                          :collector/orders
+                          :collector/consumers
+                          :collector/dish-serves
+                          :food-service/current-serves]))
 
 (def initial-donators {1 {:donator/id 1 :donator/name "Juan"}
                        2 {:donator/id 2 :donator/name "Fede"}
@@ -129,4 +138,5 @@
    :collector/food-services initial-food-services
    :collector/orders initial-orders
    :collector/consumers initial-consumers
+   :collector/dish-serves []
    :food-service/current-serves {}})

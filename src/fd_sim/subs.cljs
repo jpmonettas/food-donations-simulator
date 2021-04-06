@@ -23,6 +23,13 @@
          :<- [:ui/selected-food-service]
          subs.collector/selected-food-service-consumers)
 
+(reg-sub :collector/dish-serves subs.collector/dish-serves)
+(reg-sub :collector/selected-food-service-dish-serves
+         :<- [:collector/dish-serves]
+         :<- [:ui/selected-food-service]
+         subs.collector/selected-food-service-dish-serves)
+
+
 (reg-sub :ui/selected-role subs.ui/selected-role)
 (reg-sub :ui/selected-donator subs.ui/selected-donator)
 (reg-sub :ui/selected-food-service subs.ui/selected-food-service)

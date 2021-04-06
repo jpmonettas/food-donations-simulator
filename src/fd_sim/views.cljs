@@ -184,9 +184,26 @@
                                     (reset! ing-prices nil))}
                       "Finish"]]]]])])]))))
 
+(defn dish-serves-panel [serves]
+  [:div
+   [:h2.title "Dish serves"]
+   [:table
+    [:thead
+     [:tr [:th "CI"] [:th "Name"] [:th "Pic"] [:th "Order"] [:th "Dish"]]]
+    [:tbody
+     (for [s serves]
+       ^{:key (str (:order/id s) (:consumer/id s))}
+       [:tr
+        [:td (:consumer/id s)]
+        [:td (:consumer/name s)]
+        [:td [:img.profile {:src (:profile/picture s)}]]
+        [:td (:order/id s)]
+        [:td (:dish/name s)]])]]])
+
 (defn collector-panel []
   (let [orders @(subscribe [:collector/orders])
-        consumers @(subscribe [:collector/consumers])]
+        consumers @(subscribe [:collector/consumers])
+        serves @(subscribe [:collector/dish-serves])]
    [:div.collector
     [collector-market-panel]
     [dishes-panel]
@@ -194,12 +211,35 @@
     [:button {:on-click #(dispatch [:collector/create-purchase-order])}
      "Create purchase order"]
     [purchase-orders]
+    [dish-serves-panel serves]
     [consumers-panel {:consumers consumers}]
     [donations-panel {}]]))
+
+(defn serve-new-dish-panel []
+  (let [consumers (subscribe [:collector/selected-food-service-consumers])
+        orders (subscribe [:collector/selected-food-service-orders])
+        selected-consumer-id (reagent/atom (:consumer/id (first @consumers)))
+        selected-order-id (reagent/atom (:order/id (first @orders)))]
+    (fn []
+     [:div
+      [:div "Serve a dish from a order to a consumer:"]
+      [:select {:on-change (fn [e] (reset! selected-consumer-id (.-value (.-target e))))
+                :value @selected-consumer-id}
+       (for [c @consumers]
+         ^{:key (str (:consumer/id c))}
+         [:option {:value (:consumer/id c)} (str (:consumer/name c) "(" (:consumer/id c) ")")])]
+      [:select {:on-change (fn [e] (reset! selected-order-id (.-value (.-target e))))
+                :value @selected-order-id}
+       (for [o @orders]
+         ^{:key (str (:order/id o))}
+         [:option {:value (:order/id o)} (:order/id o)])]
+      [:button {:on-click #(dispatch [:collector/report-dish-serve @selected-order-id @selected-consumer-id])}
+       "Serve"]])))
 
 (defn food-service-panel []
   (let [selected-food-service (subscribe [:ui/selected-food-service])
         services (subscribe [:collector/food-services])
+        serves (subscribe [:collector/selected-food-service-dish-serves])
         orders (subscribe [:collector/selected-food-service-orders])
         consumers (subscribe [:collector/selected-food-service-consumers])
         dishes (subscribe [:collector/dishes])
@@ -235,6 +275,8 @@
                                                                                                    :order/quantity (js/parseFloat @new-order-qty-txt)}])
                                                                   (reset! new-order-qty-txt ""))}
                                              "Add"]]]}]
+        [dish-serves-panel @serves]
+        [serve-new-dish-panel]
         [consumers-panel {:consumers @consumers
                           :new-consumer-row [:tr
                                              [:td [:input {:type :text

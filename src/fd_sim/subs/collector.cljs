@@ -54,3 +54,19 @@
 
 (defn purchase-orders [db _]
   (vals (:collector/purchase-orders db)))
+
+(defn dish-serves [db _]
+  (->> (:collector/dish-serves db)
+       (map (fn [ds]
+              (let [order (get-in db [:collector/orders (:order/id ds)])
+                    dish (get-in db [:collector/dishes (:dish/id order)])
+                    consumer (get-in db [:collector/consumers (:consumer/id ds)])]
+                (println ">>>>>>" consumer "for" ds)
+                (assoc ds
+                       :consumer/name   (:consumer/name consumer)
+                       :profile/picture (:profile/picture consumer)
+                       :food-service/id (:food-service/id order)
+                       :dish/name (:dish/name dish)))))))
+
+(defn selected-food-service-dish-serves [[dish-serves selected-food-service] _]
+  (filter #(= (:food-service/id %) selected-food-service) dish-serves))

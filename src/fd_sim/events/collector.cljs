@@ -84,3 +84,7 @@
    (catch js/Error e
      (js/console.error (.-message e))
      db)))
+
+(defn report-dish-serve [db [_ order-id consumer-id]]
+  (update db :collector/dish-serves conj {:order/id order-id
+                                          :consumer/id consumer-id}))
