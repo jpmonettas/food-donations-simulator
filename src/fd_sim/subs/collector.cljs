@@ -2,7 +2,7 @@
 
 (defn balance [db _]
   (->> (:collector/donations db)
-       (map :donation/amount)
+       (map :donation/usable-amount)
        (reduce +)))
 
 (defn market [db _]

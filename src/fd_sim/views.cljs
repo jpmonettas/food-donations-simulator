@@ -19,14 +19,15 @@
     [:h2.title "Donations"]
     [:table
      [:thead
-      [:tr [:th "Id"] [:th "Donator"] [:th "Amount"]]]
+      [:tr [:th "Id"] [:th "Donator"] [:th "Amount"] [:th "Remaining"]]]
      [:tbody
       (for [d donations]
         ^{:key (str (:donation/id d))}
         [:tr
          [:td (str (:donation/id d))]
          [:td (:donator/name (get donators (:donator/id d)))]
-         [:td (str (:donation/amount d))]])
+         [:td (str (:donation/amount d))]
+         [:td (str (:donation/usable-amount d))]])
       ]]]))
 
 (defn donator-panel []

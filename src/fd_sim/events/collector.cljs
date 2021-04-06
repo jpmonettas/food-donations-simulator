@@ -50,5 +50,37 @@
             :purchase-order/ingredients po-ingredients}]
     (update db :collector/purchase-orders assoc next-id po)))
 
-(defn fill-purchase-order [db [_ po-id order-fill]]  
-  (assoc-in db [:collector/purchase-orders po-id :purchase-order/fill] order-fill))
+(defn consume-donations [donations spent-amount]
+  ;; this is inefficient but will work for the simulator
+  (let [{:keys [processed-donations remaining-amount]}
+        (->> donations
+             (reduce (fn [{:keys [processed-donations remaining-amount] :as r} {:keys [donation/usable-amount] :as donation}]
+                       (if (zero? remaining-amount)
+                         (update r :processed-donations conj donation)
+                         (if (<= usable-amount remaining-amount)
+                           ;; if this donation is not enough
+                           {:processed-donations (conj processed-donations (assoc donation :donation/usable-amount 0))
+                            :remaining-amount (- remaining-amount usable-amount)}
+
+                           ;; else this donation is enough to pay the rest, pay and leave the change in the donation
+                           {:processed-donations (conj processed-donations (update donation :donation/usable-amount #(- % remaining-amount)))
+                            :remaining-amount 0})))
+                     {:processed-donations []
+                      :remaining-amount spent-amount}))]
+    
+    (if (zero? remaining-amount)
+      ;; we were able to pay everything, return the update donations
+      processed-donations
+      
+      ;; not enough donations to pay for spent-amount
+      (throw (ex-info "Not enough donations to pay for spent-amount" {})))))
+
+(defn fill-purchase-order [db [_ po-id order-fill]]
+  (try 
+   (let [spent-amount (reduce + (vals order-fill))]
+     (-> db
+         (update :collector/donations consume-donations spent-amount)
+         (assoc-in [:collector/purchase-orders po-id :purchase-order/fill] order-fill)))
+   (catch js/Error e
+     (js/console.error (.-message e))
+     db)))
