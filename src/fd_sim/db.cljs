@@ -17,7 +17,7 @@
 (s/def :order/status #{:open :filled})
 (s/def :food-service/order (s/keys :req [:order/id :dish/id :order/quantity :food-service/id]))
 
-(s/def :ui.tabs/main #{:donator :collector :food-service})
+(s/def :ui.tabs/main #{:donator :collector :food-service :transparency})
 (s/def :ui.tabs/collector #{:market-dishes :orders :serves :consumers :donations})
 (s/def :ui.tabs/food-service #{:orders-serves :consumers})
 (s/def :ui.tabs/transparency #{:donation-explorer})

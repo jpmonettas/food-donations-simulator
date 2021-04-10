@@ -28,6 +28,10 @@ body .main .top-bar {
   color: red;
 }
 
+.tabs.sub-tabs .tab {
+  font-size: 12px;
+}
+
 .tab-content {
   padding-top: 10px;
 }

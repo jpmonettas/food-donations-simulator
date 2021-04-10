@@ -19,7 +19,9 @@
     [:.tab {:display :inline-block
             :border "1px solid #333"
             :padding "5px"}
-     [:&.selected {:color :red}]]]
+     [:&.selected {:color :red}]]
+    [:&.sub-tabs
+     [:.tab {:font-size "12px"}]]]
 
    [:.tab-content {:padding-top "10px"}
     [:div {:margin-bottom "10px"}]]])

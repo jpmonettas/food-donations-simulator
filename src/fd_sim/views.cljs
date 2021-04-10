@@ -3,9 +3,9 @@
             [reagent.core :as reagent]
             [clojure.string :as str]))
 
-(defn tabs [{:keys [tab-id items]}]
+(defn tabs [{:keys [tab-id items extra-class]}]
   (let [selected @(subscribe [:ui/selected-tab tab-id])]
-    [:div.tabs
+    [:div.tabs (when extra-class {:class extra-class})
      (for [[label id] items]
        ^{:key (str tab-id "->" id)}
        [:div.tab (cond-> {:on-click #(dispatch [:ui/select-tab tab-id id])}
@@ -208,6 +208,7 @@
         selected-collector-tab @(subscribe [:ui/selected-tab :collector])]
     [:div.collector     
      [tabs {:tab-id :collector
+            :extra-class "sub-tabs"
             :items [["Market and Dishes" :market-dishes]
                     ["Orders" :orders]
                     ["Serves" :serves]
@@ -275,6 +276,7 @@
              ^{:key (str (:food-service/id s))}
              [:option {:value (:food-service/id s)} (:food-service/name s)])]]
          [tabs {:tab-id :food-service
+                :extra-class "sub-tabs"
                 :items [["Orders and Serves" :orders-serves]
                         ["Consumers" :consumers]]}]
          [:div.tab-content
@@ -320,6 +322,20 @@
                                                                                        (reset! new-cons-name-txt ""))}
                                                                   "Register"]]]}])]]))))
 
+(defn donation-explorer []
+  [:div
+   [:div "Donation explorerrrrrrrrr"]])
+
+(defn transparency-tab []
+  (let [selected-transparency-tab @(subscribe [:ui/selected-tab :transparency])]
+    [:div.transparency
+     [tabs {:tab-id :transparency
+            :extra-class "sub-tabs"
+            :items [["Donation Explorer" :donation-explorer]]}]
+     [:div.tab-content
+      (case selected-transparency-tab
+        :donation-explorer [donation-explorer])]]))
+
 (defn main []
   (let [selected-main-tab @(subscribe [:ui/selected-tab :main])]
     [:div.main
@@ -328,14 +344,16 @@
       [tabs {:tab-id :main
              :items [["Donator" :donator]
                      ["Collector" :collector]
-                     ["Food service" :food-service]]}]      
+                     ["Food service" :food-service]
+                     ["Transparency" :transparency]]}]      
       [:div.balance (str "$U " @(subscribe [:collector/balance]))]]
 
      [:div.tab-content
       (case selected-main-tab
         :donator      [donator-tab]
         :collector    [collector-tab]
-        :food-service [food-service-tab])]]))
+        :food-service [food-service-tab]
+        :transparency [transparency-tab])]]))
  
 
 
