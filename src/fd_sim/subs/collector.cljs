@@ -61,7 +61,6 @@
               (let [order (get-in db [:collector/orders (:order/id ds)])
                     dish (get-in db [:collector/dishes (:dish/id order)])
                     consumer (get-in db [:collector/consumers (:consumer/id ds)])]
-                (println ">>>>>>" consumer "for" ds)
                 (assoc ds
                        :consumer/name   (:consumer/name consumer)
                        :profile/picture (:profile/picture consumer)

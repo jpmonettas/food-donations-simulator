@@ -30,7 +30,7 @@
          subs.collector/selected-food-service-dish-serves)
 
 
-(reg-sub :ui/selected-role subs.ui/selected-role)
+(reg-sub :ui/selected-tab subs.ui/selected-tab)
 (reg-sub :ui/selected-donator subs.ui/selected-donator)
 (reg-sub :ui/selected-food-service subs.ui/selected-food-service)
 (reg-sub :donators/donators subs.donators/donators)

@@ -17,7 +17,15 @@
 (s/def :order/status #{:open :filled})
 (s/def :food-service/order (s/keys :req [:order/id :dish/id :order/quantity :food-service/id]))
 
-(s/def :ui/selected-role #{:donator :collector :food-service})
+(s/def :ui.tabs/main #{:donator :collector :food-service})
+(s/def :ui.tabs/collector #{:market-dishes :orders :serves :consumers :donations})
+(s/def :ui.tabs/food-service #{:orders-serves :consumers})
+(s/def :ui.tabs/transparency #{:donation-explorer})
+(s/def :ui/selected-tab (s/keys :req-un [:ui.tabs/main
+                                         :ui.tabs/collector
+                                         :ui.tabs/food-service
+                                         :ui.tabs/transparency]))
+
 (s/def :ui/selected-donator :donator/id)
 (s/def :ui/selected-food-service :food-service/id)
 
@@ -61,7 +69,7 @@
 (s/def :collector/dish-serve (s/keys :req [:order/id :consumer/id]))
 (s/def :collector/dish-serves (s/coll-of :collector/dish-serve))
 
-(s/def ::db (s/keys :req [:ui/selected-role
+(s/def ::db (s/keys :req [:ui/selected-tab
                           :ui/selected-donator
                           :ui/selected-food-service
                           :collector/market
@@ -128,7 +136,10 @@
                          :donation/usable-amount 177}])
 
 (def initial-db
-  {:ui/selected-role :donator
+  {:ui/selected-tab {:main :donator
+                     :collector :market-dishes
+                     :food-service :orders-serves
+                     :transparency :donation-explorer}
    :ui/selected-donator (ffirst initial-donators)
    :ui/selected-food-service (ffirst initial-food-services)
    :collector/market initial-market

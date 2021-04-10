@@ -1,7 +1,7 @@
 (ns fd-sim.subs.ui)
 
-(defn selected-role [db _]
-  (:ui/selected-role db))
+(defn selected-tab [db [_ tab-id]]
+  (get-in db [:ui/selected-tab tab-id]))
 
 (defn selected-donator [db _]
   (:ui/selected-donator db))

@@ -26,7 +26,7 @@
 (reg-event-db :collector/fill-purchase-order [sc] events.collector/fill-purchase-order)
 (reg-event-db :collector/report-dish-serve [sc] events.collector/report-dish-serve)
 
-(reg-event-db :ui/select-role [sc] events.ui/select-role)
+(reg-event-db :ui/select-tab [sc] events.ui/select-tab)
 (reg-event-db :ui/select-donator [sc] events.ui/select-donator)
 (reg-event-db :ui/select-food-service [sc] events.ui/select-food-service)
 
