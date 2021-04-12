@@ -2,12 +2,13 @@
   (:require [fd-sim.events.donators :as events.donators]
             [clojure.spec.alpha :as s]))
 
+(s/def :person/name string?)
 (s/def :consumer/id string?)
-(s/def :consumer/name string?)
+(s/def :consumer/name :person/name)
 (s/def :profile/picture string?)
 
 (s/def :donator/id int?)
-(s/def :donator/name string?)
+(s/def :donator/name :person/name)
 
 (s/def :food-service/id int?)
 (s/def :food-service/name string?)
@@ -79,35 +80,48 @@
                           :collector/food-services
                           :collector/orders
                           :collector/consumers
-                          :collector/dish-serves
-                          :food-service/current-serves]))
+                          :collector/dish-serves]))
 
 (def initial-donators {1 {:donator/id 1 :donator/name "Juan"}
                        2 {:donator/id 2 :donator/name "Fede"}
                        3 {:donator/id 3 :donator/name "Gonza"}
                        4 {:donator/id 4 :donator/name "Nico"}})
 
-(def initial-market {1 {:ingredient/name "Papas"}
-                     2 {:ingredient/name "Muñato"}})
+(def initial-market {1 {:ingredient/name "Papa"}
+                     2 {:ingredient/name "Boñato"}
+                     3 {:ingredient/name "Cebolla"}
+                     4 {:ingredient/name "Zapallo"}
+                     5 {:ingredient/name "Zanahoria"}
+                     50 {:ingredient/name "Chorizo"}
+                     51 {:ingredient/name "Carne"}
+                     52 {:ingredient/name "Lentejas"}
+                     53 {:ingredient/name "Pulpa de tomate"}
+                     100 {:ingredient/name "Sal"}
+                     101 {:ingredient/name "Aceite"}                     
+                     })
 
 (def initial-dishes {1 {:dish/id 1
                         :dish/name "Ensopado"
                         :dish/ingredients {1 125
-                                           2 200}}
+                                           2 125
+                                           3 125
+                                           4 125
+                                           5 100
+                                           50 70
+                                           53 30
+                                           100 2}}
                      2 {:dish/id 2
-                        :dish/name "Papas al horno"
-                        :dish/ingredients {1 500}}})
+                        :dish/name "Carne con papas al horno"
+                        :dish/ingredients {1 300
+                                           51 200
+                                           100 2}}})
 
 (def initial-food-services {1 {:food-service/id 1
                                :food-service/name "Olla Popular Palermo"}
                             2 {:food-service/id 2
+                               :food-service/name "Merendero Calafi"}
+                            3 {:food-service/id 3
                                :food-service/name "Olla Popular Cordon"}})
-
-(def initial-orders {1 {:order/id 1
-                        :food-service/id 1
-                        :dish/id 1
-                        :order/quantity 10
-                        :order/status :open}})
 
 (def initial-consumers {"4.875.532-2" {:consumer/id "4.875.532-2"
                                        :consumer/name "Martin"
@@ -121,6 +135,13 @@
                                        :consumer/name "Jorge"
                                        :profile/picture "https://images.pexels.com/photos/2078265/pexels-photo-2078265.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
                                        :food-service/id 2}})
+
+(def initial-orders {1 {:order/id 1
+                        :food-service/id 1
+                        :dish/id 1
+                        :order/quantity 10
+                        :order/status :open}})
+
 
 (def initial-donations [{:donator/id 1
                          :donation/id 1
@@ -143,11 +164,10 @@
    :ui/selected-donator (ffirst initial-donators)
    :ui/selected-food-service (ffirst initial-food-services)
    :collector/market initial-market
-   :collector/donations initial-donations
+   :collector/donations [] 
    :collector/donators initial-donators
    :collector/dishes initial-dishes
    :collector/food-services initial-food-services
-   :collector/orders initial-orders
-   :collector/consumers initial-consumers
-   :collector/dish-serves []
-   :food-service/current-serves {}})
+   :collector/orders {}
+   :collector/consumers {}
+   :collector/dish-serves []})

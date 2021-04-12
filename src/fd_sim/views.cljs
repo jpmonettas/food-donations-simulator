@@ -35,9 +35,7 @@
         donators (subscribe [:donators/donators])
         selected-donator (subscribe [:ui/selected-donator])]
     (fn []
-      [:div
-       [:div
-        [:button {} "Generate 100 random donations"]]
+      [:div       
        [:div.user
         [:div
          [:label "Login as :"]
@@ -48,8 +46,9 @@
             [:option {:value (:donator/id d)} (:donator/name d)])]]
         [:div
          [:input {:type :number :value @amount-txt :on-change #(reset! amount-txt (.-value (.-target %)))}]
-         [:button {:on-click #(dispatch [:collector/add-donation {:donator/id @selected-donator
-                                                                  :donation/amount (js/parseFloat @amount-txt)}])}
+         [:button {:on-click #(do
+                                (dispatch [:collector/add-donation @selected-donator (js/parseFloat @amount-txt)])
+                                (reset! amount-txt ""))}
           "Donate"]]]
        [donations-panel {:donator/id @selected-donator}]])))
 
@@ -102,7 +101,7 @@
                     (str/join ", "))]])]]]))
 
 (defn orders-panel [{:keys [orders new-order-row]}]
-  [:div.panel
+  [:div.panel.orders
    [:h2.title "Orders"]
    [:table
     [:thead
@@ -119,7 +118,7 @@
        new-order-row)]]])
 
 (defn consumers-panel [{:keys [consumers new-consumer-row]}]
-  [:div.panel {}
+  [:div.panel.consumers {}
    [:h2.title "Consumers"]
    [:table
     [:thead
@@ -186,7 +185,7 @@
                        "Finish"]]]]])])]))))
 
 (defn dish-serves-panel [serves]
-  [:div.panel
+  [:div.panel.dish-serves
    [:h2.title "Dish serves"]
    [:table
     [:thead
@@ -345,7 +344,9 @@
              :items [["Donator" :donator]
                      ["Collector" :collector]
                      ["Food service" :food-service]
-                     ["Transparency" :transparency]]}]      
+                     ["Transparency" :transparency]]}]
+      [:button {:on-click #(dispatch [:collector/generate-random-data])}
+       "Generate random data"]
       [:div.balance (str "$U " @(subscribe [:collector/balance]))]]
 
      [:div.tab-content

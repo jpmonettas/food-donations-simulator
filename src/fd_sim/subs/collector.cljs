@@ -49,6 +49,7 @@
 
 (defn selected-food-service-consumers [[consumers food-services food-service-id]]
   (->> consumers
+       (filter #(= food-service-id (:food-service/id %)))
        (map (fn [c]
               (assoc c :food-service/name (:food-service/name (get food-services (:food-service/id c))))))))
 

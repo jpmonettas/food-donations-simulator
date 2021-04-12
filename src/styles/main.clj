@@ -31,16 +31,25 @@
 
 (def panel
   [[:.panel {:border "1px solid #333"
-             :padding "5px"}
+             :padding "5px"
+             :overflow :auto}
     [:h2 {:margin "0px"}]
     [:.title {:margin-bottom "10px"}]
+    [:&.orders {:height "300px"}]
+    [:&.dish-serves {:height "400px"}]
+    [:&.consumers {:height "500px"}]
+    [:&.donations {:height "500px"}]
+    
     ]])
 
 (def tables
   [[:table {:font-size "13px"
             :border-collapse :collapse
             :width "100%"}
-    [:th {:text-align :left}]
+    [:th {:text-align :left
+          :position :sticky
+          :top 0
+          :background :white}]
     [:td {}]]])
 
 ;; This creates resources/public/css/main.css

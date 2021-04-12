@@ -25,6 +25,8 @@
 (reg-event-db :collector/create-purchase-order [sc] events.collector/create-purchase-order)
 (reg-event-db :collector/fill-purchase-order [sc] events.collector/fill-purchase-order)
 (reg-event-db :collector/report-dish-serve [sc] events.collector/report-dish-serve)
+(reg-event-db :collector/generate-random-data [sc] events.collector/generate-random-data)
+
 
 (reg-event-db :ui/select-tab [sc] events.ui/select-tab)
 (reg-event-db :ui/select-donator [sc] events.ui/select-donator)
