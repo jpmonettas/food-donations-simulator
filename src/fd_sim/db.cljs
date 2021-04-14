@@ -44,6 +44,7 @@
 (s/def :dish/ingredients (s/map-of :ingredient/id :ingredient/quantity))
 
 (s/def :collector/donator (s/keys :req [:donator/id :donator/name]))
+
 (s/def :collector/donation (s/keys :req [:donator/id
                                          :donation/id
                                          :donation/amount
@@ -67,8 +68,22 @@
                                                :purchase-order/ingredients]
                                          :opt [:purchase-order/fill]))
 (s/def :collector/purchase-orders (s/map-of :purchase-order/id :collector/purchase-order))
-(s/def :collector/dish-serve (s/keys :req [:order/id :consumer/id]))
+(s/def :dish/paid-ingredients (s/coll-of (s/tuple :ingredient/id :sim/price (s/nilable :donation/id))))
+(s/def :collector/dish-serve (s/keys :req [:order/id                                           
+                                           :dish/paid-ingredients]
+                                     :opt [:consumer/id]))
 (s/def :collector/dish-serves (s/coll-of :collector/dish-serve))
+
+(s/def :donation-explorer/selected-donation (s/nilable :donation/id))
+(s/def :donation-explorer/scale number?)
+(s/def :donation-explorer/translate (s/tuple number? number?))
+(s/def :donation-explorer/screen-current (s/tuple number? number?))
+(s/def :donation-explorer/grab (s/keys :req-un [:donation-explorer/screen-current]))
+(s/def :donation-explorer/map-state (s/keys :req-un [:donation-explorer/scale
+                                                  :donation-explorer/translate]
+                                            :opt-un [:donation-explorer/grab]))
+(s/def :collector/donation-explorer (s/keys :req-un [:donation-explorer/selected-donation
+                                                     :donation-explorer/map-state]))
 
 (s/def ::db (s/keys :req [:ui/selected-tab
                           :ui/selected-donator
@@ -80,7 +95,8 @@
                           :collector/food-services
                           :collector/orders
                           :collector/consumers
-                          :collector/dish-serves]))
+                          :collector/dish-serves
+                          :collector/donation-explorer]))
 
 (def initial-donators {1 {:donator/id 1 :donator/name "Juan"}
                        2 {:donator/id 2 :donator/name "Fede"}
@@ -164,10 +180,13 @@
    :ui/selected-donator (ffirst initial-donators)
    :ui/selected-food-service (ffirst initial-food-services)
    :collector/market initial-market
-   :collector/donations [] 
    :collector/donators initial-donators
    :collector/dishes initial-dishes
    :collector/food-services initial-food-services
+   :collector/consumers initial-consumers
+   :collector/donations [] 
    :collector/orders {}
-   :collector/consumers {}
-   :collector/dish-serves []})
+   :collector/dish-serves []
+   :collector/donation-explorer {:selected-donation nil
+                                 :map-state {:translate [0 0]
+                                             :scale 1}}})

@@ -2,8 +2,8 @@
   (:require [garden.stylesheet :refer [at-media at-keyframes]]))
 
 (def screen
-  [:body {:font-family "sans-serif"
-          }
+  [:body {:font-family "sans-serif"}
+   [:.clickable {:cursor :pointer}]
    [:.main {}
     [:.top-bar {:display :flex
                 :flex-direction :row

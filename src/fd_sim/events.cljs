@@ -3,6 +3,7 @@
             [fd-sim.events.collector :as events.collector]
             [fd-sim.events.ui :as events.ui]
             [fd-sim.events.food-service :as events.food-service]
+            [fd-sim.events.donation-explorer :as events.donation-explorer]
             [fd-sim.db :as db]
             [expound.alpha :as expound]
             [clojure.spec.alpha :as s]))
@@ -26,6 +27,12 @@
 (reg-event-db :collector/fill-purchase-order [sc] events.collector/fill-purchase-order)
 (reg-event-db :collector/report-dish-serve [sc] events.collector/report-dish-serve)
 (reg-event-db :collector/generate-random-data [sc] events.collector/generate-random-data)
+
+(reg-event-db :donation-explorer/select-donation [sc] events.donation-explorer/select-donation)
+(reg-event-db :donation-explorer.map/zoom [sc] events.donation-explorer/zoom)
+(reg-event-db :donation-explorer.map/grab [sc] events.donation-explorer/map-grab)
+(reg-event-db :donation-explorer.map/drag [sc] events.donation-explorer/drag)
+(reg-event-db :donation-explorer.map/grab-release [sc] events.donation-explorer/map-grab-release)
 
 
 (reg-event-db :ui/select-tab [sc] events.ui/select-tab)

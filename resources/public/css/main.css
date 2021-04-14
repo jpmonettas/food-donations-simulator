@@ -2,6 +2,10 @@ body {
   font-family: sans-serif;
 }
 
+body .clickable {
+  cursor: pointer;
+}
+
 body .main {
 
 }

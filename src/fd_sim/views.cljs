@@ -1,7 +1,9 @@
 (ns fd-sim.views
   (:require [re-frame.core :refer [dispatch subscribe]]
             [reagent.core :as reagent]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [goog.string :as gstr]
+            [fd-sim.donation-explorer-views :as donation-explorer-views]))
 
 (defn tabs [{:keys [tab-id items extra-class]}]
   (let [selected @(subscribe [:ui/selected-tab tab-id])]
@@ -23,7 +25,7 @@
      [:tbody
       (for [d donations]
         ^{:key (str (:donation/id d))}
-        [:tr
+        [:tr.clickable {:on-click #(dispatch [:donation-explorer/select-donation (:donation/id d)])}
          [:td (str (:donation/id d))]
          [:td (:donator/name (get donators (:donator/id d)))]
          [:td (str (:donation/amount d))]
@@ -137,40 +139,42 @@
 (defn purchase-orders-panel []
   (let [purchase-orders (subscribe [:collector/purchase-orders])
         market (subscribe [:collector/market])
-        selected-order (reagent/atom nil)
+        selected-porder (reagent/atom nil)
         ing-prices (reagent/atom nil)]
     (fn []
       (let [prices @ing-prices
-            ing-names @market]
+            ing-names @market
+            selected-purchase-order-val @selected-porder]
         [:div.panel {}
          [:h2.title "Purchase Orders"]
-         (when (seq @purchase-orders)
+         (when (seq (vals @purchase-orders))
            [:div
             
             [:table
              [:thead
               [:tr [:th "ID"] [:th "Orders"] [:th ""]]]
              [:tbody
-              (for [po @purchase-orders]
+              (for [po (vals @purchase-orders)]
                 ^{:key (str (:purchase-order/id po))}
                 [:tr
                  [:td (:purchase-order/id po)]
                  [:td (str/join "," (:purchase-order/orders po))]
                  [:td (when-not (:purchase-order/fill po)
                         [:button {:on-click #(do
-                                               (reset! selected-order po)
+                                               (reset! selected-porder po)
                                                (reset! ing-prices (zipmap (keys (:purchase-order/ingredients po))
                                                                           (repeat nil))))}
                          "Fill"])]])]]
-            (when @selected-order
+            (when selected-purchase-order-val
               [:table
                [:thead
-                [:tr [:th "Ingredient"] [:th "Deal price"]]]
+                [:tr [:th "Ingredient"] [:th "Qty"] [:th "Deal price"]]]
                [:tbody
                 (for [i (keys prices)]
                   ^{:key (str i)}
                   [:tr
                    [:td (:ingredient/name (get ing-names i))]
+                   [:td (str (get-in selected-purchase-order-val [:purchase-order/ingredients i]) " grs")]
                    [:td [:input {:type :number
                                  :value (get prices i)
                                  :on-change #(swap! ing-prices assoc i (js/parseFloat (.-value (.-target %))))}]]])
@@ -178,9 +182,9 @@
                  [:td [:button
                        {:on-click #(do
                                      (dispatch [:collector/fill-purchase-order
-                                                (:purchase-order/id @selected-order)
+                                                (:purchase-order/id selected-purchase-order-val)
                                                 @ing-prices])
-                                     (reset! selected-order nil)
+                                     (reset! selected-porder nil)
                                      (reset! ing-prices nil))}
                        "Finish"]]]]])])]))))
 
@@ -203,7 +207,7 @@
 (defn collector-tab []
   (let [orders @(subscribe [:collector/orders])
         consumers @(subscribe [:collector/consumers])
-        serves @(subscribe [:collector/dish-serves])
+        serves @(subscribe [:collector/dish-serves true])
         selected-collector-tab @(subscribe [:ui/selected-tab :collector])]
     [:div.collector     
      [tabs {:tab-id :collector
@@ -230,31 +234,33 @@
 (defn serve-new-dish-panel []
   (let [consumers (subscribe [:collector/selected-food-service-consumers])
         orders (subscribe [:collector/selected-food-service-orders])
-        selected-consumer-id (reagent/atom (:consumer/id (first @consumers)))
-        selected-order-id (reagent/atom (:order/id (first @orders)))]
+        selected-consumer-id (reagent/atom nil)
+        selected-order-id (reagent/atom nil)]
     (fn []
-      (let [filled-orders (filter #(= (:order/status %) :filled)@orders)]
+      (let [filled-orders (filter #(= (:order/status %) :filled) @orders)
+            selected-order-id-val (or @selected-order-id (:order/id (first @orders)))
+            selected-consumer-id-val (or @selected-consumer-id (:consumer/id (first @consumers)))]
         [:div.panel
          [:h2 "Serve a dish"]
          (when (seq filled-orders)
            [:div
             [:select {:on-change (fn [e] (reset! selected-consumer-id (.-value (.-target e))))
-                      :value @selected-consumer-id}
+                      :value selected-consumer-id-val}
              (for [c @consumers]
                ^{:key (str (:consumer/id c))}
                [:option {:value (:consumer/id c)} (str (:consumer/name c) "(" (:consumer/id c) ")")])]
             [:select {:on-change (fn [e] (reset! selected-order-id (.-value (.-target e))))
-                      :value @selected-order-id}
+                      :value selected-order-id-val}
              (for [o filled-orders]
                ^{:key (str (:order/id o))}
                [:option {:value (:order/id o)} (:order/id o)])]
-            [:button {:on-click #(dispatch [:collector/report-dish-serve @selected-order-id @selected-consumer-id])}
+            [:button {:on-click #(dispatch [:collector/report-dish-serve selected-order-id-val selected-consumer-id-val])}
              "Serve"]])]))))
 
 (defn food-service-tab []
   (let [selected-food-service (subscribe [:ui/selected-food-service])
         services (subscribe [:collector/food-services])
-        serves (subscribe [:collector/selected-food-service-dish-serves])
+        serves (subscribe [:collector/selected-food-service-dish-serves true])
         orders (subscribe [:collector/selected-food-service-orders])
         consumers (subscribe [:collector/selected-food-service-consumers])
         selected-food-service-tab (subscribe [:ui/selected-tab :food-service])
@@ -321,10 +327,6 @@
                                                                                        (reset! new-cons-name-txt ""))}
                                                                   "Register"]]]}])]]))))
 
-(defn donation-explorer []
-  [:div
-   [:div "Donation explorerrrrrrrrr"]])
-
 (defn transparency-tab []
   (let [selected-transparency-tab @(subscribe [:ui/selected-tab :transparency])]
     [:div.transparency
@@ -333,7 +335,7 @@
             :items [["Donation Explorer" :donation-explorer]]}]
      [:div.tab-content
       (case selected-transparency-tab
-        :donation-explorer [donation-explorer])]]))
+        :donation-explorer [donation-explorer-views/donation-explorer])]]))
 
 (defn main []
   (let [selected-main-tab @(subscribe [:ui/selected-tab :main])]
@@ -347,7 +349,7 @@
                      ["Transparency" :transparency]]}]
       [:button {:on-click #(dispatch [:collector/generate-random-data])}
        "Generate random data"]
-      [:div.balance (str "$U " @(subscribe [:collector/balance]))]]
+      [:div.balance (gstr/format "$U %d" @(subscribe [:collector/balance]))]]
 
      [:div.tab-content
       (case selected-main-tab

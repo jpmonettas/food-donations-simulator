@@ -36,10 +36,16 @@
                                            :open
                                            :filled))))))))
 
+(defn orders-map [db _]
+  (:collector/orders db))
+
 (defn selected-food-service-orders [[orders dishes food-service-id] _]
   (->> orders
        (filter #(= food-service-id (:food-service/id %)))
        (map (fn [o] (assoc o :dish/name (:dish/name (get dishes (:dish/id o))))))))
+
+(defn consumers-map [db _]
+  (:collector/consumers db))
 
 (defn consumers [db _]
   (let [food-services (:collector/food-services db)]
@@ -54,19 +60,25 @@
               (assoc c :food-service/name (:food-service/name (get food-services (:food-service/id c))))))))
 
 (defn purchase-orders [db _]
-  (vals (:collector/purchase-orders db)))
+  (:collector/purchase-orders db))
 
-(defn dish-serves [db _]
-  (->> (:collector/dish-serves db)
-       (map (fn [ds]
-              (let [order (get-in db [:collector/orders (:order/id ds)])
-                    dish (get-in db [:collector/dishes (:dish/id order)])
-                    consumer (get-in db [:collector/consumers (:consumer/id ds)])]
-                (assoc ds
-                       :consumer/name   (:consumer/name consumer)
-                       :profile/picture (:profile/picture consumer)
-                       :food-service/id (:food-service/id order)
-                       :dish/name (:dish/name dish)))))))
+(defn dish-serves [db [_ served?]]
+  (cond->> (:collector/dish-serves db)
+    served? (filter :consumer/id)
+    true (map (fn [ds]
+                (let [order (get-in db [:collector/orders (:order/id ds)])
+                      dish (get-in db [:collector/dishes (:dish/id order)])
+                      consumer (get-in db [:collector/consumers (:consumer/id ds)])]
+                  (assoc ds
+                         :consumer/name   (:consumer/name consumer)
+                         :profile/picture (:profile/picture consumer)
+                         :food-service/id (:food-service/id order)
+                         :dish/name (:dish/name dish)))))))
 
-(defn selected-food-service-dish-serves [[dish-serves selected-food-service] _]
-  (filter #(= (:food-service/id %) selected-food-service) dish-serves))
+(defn selected-food-service-dish-serves [[dish-serves selected-food-service] [_ served?]]
+  (cond->> dish-serves
+    served? (filter :consumer/id)
+    true (filter #(= (:food-service/id %) selected-food-service))))
+
+(defn donation-explorer [db _]
+  (:collector/donation-explorer db))

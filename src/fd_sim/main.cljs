@@ -13,6 +13,9 @@
 
 (defn ^:export init []
   (fsa/connect {:tap-name "fd-sim"})
-  (fsa/trace-ref re-frame.db/app-db {:ref-name "re-frame-db"})
+  (fsa/trace-ref re-frame.db/app-db {:ref-name "re-frame-db"
+                                     ;; comment out this to debug donation-explorer
+                                     ;; this is ignored so map dragging events don't spam flow-storm                                     
+                                     :ignore-keys [:collector/donation-explorer]})
   (re-frame/dispatch-sync [:collector/initialize])
   (mount-component))
