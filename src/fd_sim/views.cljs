@@ -328,6 +328,19 @@
                                                                                        (reset! new-cons-name-txt ""))}
                                                                   "Register"]]]}])]]))))
 
+(defn donators-ranking []
+  (let [ranking @(subscribe [:collector/donators-ranking])]
+    [:div {}
+     [:table
+      [:thead
+       [:tr [:th "Name"] [:th "Amount"]]]
+      [:tbody
+       (for [d ranking]
+         ^{:key (:donator/id d)}
+         [:tr
+          [:td (:donator/name d)]
+          [:td (gstr/format "$U %d" (:amount d))]])]]]))
+
 (defn transparency-tab []
   (let [selected-transparency-tab @(subscribe [:ui/selected-tab :transparency])]
     [:div.transparency
@@ -339,7 +352,7 @@
      [:div.tab-content
       (case selected-transparency-tab
         :donation-explorer [donation-explorer-views/donation-explorer]
-        :donators-ranking [:div]
+        :donators-ranking [donators-ranking]
         :companies-marketing [:div
                               [:img {:src "./logos.png"}]])]]))
 

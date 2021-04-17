@@ -57,4 +57,9 @@
 (reg-sub :ui/selected-food-service subs.ui/selected-food-service)
 (reg-sub :donators/donators subs.donators/donators)
 
+(reg-sub :collector/donators-ranking
+         :<- [:collector/donations]
+         :<- [:donators/donators]
+         subs.collector/donators-ranking)
+
 

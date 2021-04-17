@@ -82,3 +82,14 @@
 
 (defn donation-explorer [db _]
   (:collector/donation-explorer db))
+
+(defn donators-ranking [[donations donators] _]
+  (->> donations
+       (group-by :donator/id)
+       (map (fn [[donator-id donations]]
+              {:donator/id donator-id
+               :donator/name (:donator/name (get donators donator-id))
+               :amount (->> (map :donation/amount donations)
+                            (reduce +))}))
+       (sort-by :amount >)
+       ))
