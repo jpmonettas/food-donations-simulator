@@ -28,8 +28,8 @@
         [:tr.clickable {:on-click #(dispatch [:donation-explorer/select-donation (:donation/id d)])}
          [:td (str (:donation/id d))]
          [:td (:donator/name (get donators (:donator/id d)))]
-         [:td (str (:donation/amount d))]
-         [:td (str (:donation/usable-amount d))]])
+         [:td (gstr/format "%d" (:donation/amount d))]
+         [:td (gstr/format "%d" (:donation/usable-amount d))]])
       ]]]))
 
 (defn donator-tab []
@@ -51,7 +51,8 @@
          [:button {:on-click #(do
                                 (dispatch [:collector/add-donation @selected-donator (js/parseFloat @amount-txt)])
                                 (reset! amount-txt ""))}
-          "Donate"]]]
+          "Donate"]
+         [:span "Visa, Mastercard, PayPal, Bitcoin"]]]
        [donations-panel {:donator/id @selected-donator}]])))
 
 (defn collector-market-panel []
@@ -332,10 +333,18 @@
     [:div.transparency
      [tabs {:tab-id :transparency
             :extra-class "sub-tabs"
-            :items [["Donation Explorer" :donation-explorer]]}]
+            :items [["Donation Explorer" :donation-explorer]
+                    ["Donators Ranking" :donators-ranking]
+                    ["Companies Marketing" :companies-marketing]]}]
      [:div.tab-content
       (case selected-transparency-tab
-        :donation-explorer [donation-explorer-views/donation-explorer])]]))
+        :donation-explorer [donation-explorer-views/donation-explorer]
+        :donators-ranking [:div]
+        :companies-marketing [:div
+                              [:img {:src "./logos.png"}]])]]))
+
+(defn company-tab []
+  [:div "Companies donations comming soon..."])
 
 (defn main []
   (let [selected-main-tab @(subscribe [:ui/selected-tab :main])]
@@ -346,6 +355,7 @@
              :items [["Donator" :donator]
                      ["Collector" :collector]
                      ["Food service" :food-service]
+                     ["Company" :company]
                      ["Transparency" :transparency]]}]
       [:button {:on-click #(dispatch [:collector/generate-random-data])}
        "Generate random data"]
@@ -356,7 +366,8 @@
         :donator      [donator-tab]
         :collector    [collector-tab]
         :food-service [food-service-tab]
-        :transparency [transparency-tab])]]))
+        :transparency [transparency-tab]
+        :company      [company-tab])]]))
  
 
 
