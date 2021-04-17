@@ -165,14 +165,17 @@
 
 (defn report-dish-serve [db [_ order-id consumer-id]]
   ;; add customer id to the next free dish-serve for order-id
-  (println "REPORTING SERVE" [order-id consumer-id])
   (let [free-serve-idx (->> (:collector/dish-serves db)
                             (map-indexed vector)
                             (some (fn [[idx dish-serve]]
                                     (when (and (= order-id (:order/id dish-serve))
                                                (nil? (:consumer/id dish-serve)))
                                       idx))))]
-   (update-in db [:collector/dish-serves free-serve-idx] assoc :consumer/id consumer-id)))
+    (if free-serve-idx
+      (update-in db [:collector/dish-serves free-serve-idx] assoc :consumer/id consumer-id)
+      (do
+        (js/console.error "Can't serve dish, no more dishes for the order")
+        db))))
 
 
 (def person-names
@@ -222,12 +225,12 @@
                      (map (fn [order-id food-service-id dish-id]
                             {:food-service/id food-service-id
                              :dish/id dish-id
-                             :order/quantity (rand-int 100)})
+                             :order/quantity (+ 20 (rand-int 80))})
                           (range n)
                           (cycle (keys food-services))
                           (cycle (keys dishes))))
         random-donator-id (fn [] (rand-int (inc (apply max (keys all-donators)))))
-        random-donation-amount (fn [] (rand-int 10000))
+        random-donation-amount (fn [] (+ 500 (rand-int 9500)))
         
         ;; add donators
         db-0 (let []
@@ -236,7 +239,7 @@
         db-1 (reduce (fn [rdb donation-id]
                        (add-donation rdb [nil (random-donator-id) (random-donation-amount)])) 
                      db-0
-                     (range 200))
+                     (range 20))
         ;; generate and register some random consumers
         db-2 (let [consumers (map (fn [pname pci pp fsid]
                                     [pci {:consumer/id pci
@@ -255,7 +258,7 @@
         db-3 (reduce (fn [rdb order]
                        (add-order rdb [nil order]))                     
                      db-2
-                     (gen-orders 50))
+                     (gen-orders 10))
         ;; create a purchase-order for the orders so far
         db-4 (create-purchase-order db-3 nil)
         created-purchase-order-id 0
@@ -264,7 +267,7 @@
         ;; we know all ingredients are needed probably after 50 orders of random dishes 
         db-5 (fill-purchase-order db-4 [nil created-purchase-order-id (zipmap
                                                                        (keys market) ;; ingredient id
-                                                                       (repeat 20000))]) ;; TODO: fix this to something that makes sense
+                                                                       (repeat 1000))]) ;; TODO: fix this to something that makes sense
         ;; add some more orders, just to have some open orders
         db-6 (reduce (fn [rdb order]
                        (add-order rdb [nil order]))                     
@@ -292,7 +295,8 @@
                (reduce (fn [rdb dish-serve]
                          (report-dish-serve rdb [nil (:order/id dish-serve) (:consumer/id dish-serve)]))
                 db-6
-                dish-serves))]
+                dish-serves))
+        ]
     
     db-7
     ))
